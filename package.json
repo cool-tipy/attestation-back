@@ -3,7 +3,7 @@
   "version": "1.0.50",
   "scripts": {
     "dev": "bun run src/index.ts",
-    "start": "bun run dist/index.js",
+    "start": "bun dist/index.js",
     "build": "bun build ./src/index.ts --outdir ./dist --target node"
   },
   "dependencies": {
