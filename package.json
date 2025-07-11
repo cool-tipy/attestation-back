@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "bun run src/index.ts",
     "start": "bun dist/index.js",
-    "build": "bun build ./src/index.ts --outdir ./dist --target node"
+    "build": "bun build ./src/index.ts --outfile ./index.js --target node"
   },
   "dependencies": {
     "@elysiajs/cookie": "^0.8.0",
