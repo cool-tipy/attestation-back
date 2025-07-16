@@ -20,10 +20,6 @@ const app = new Elysia()
   .use(authHandler)
   .listen({
     port: 3000,
-    tls: {
-      key: readFileSync("./localhost-key.pem"),
-      cert: readFileSync("./localhost.pem"),
-    },
   });
 
 console.log(
