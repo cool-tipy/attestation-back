@@ -29,21 +29,6 @@ const refreshBodySchema = t.Object({
   refreshToken: t.String(),
 });
 
-const messageResponse = t.Object({
-	message: t.String({default: "some message"})
-})
-
-const loginSuccessResponse = t.Object({
-	message: t.String({default: "Вход успешен"}),
-  accessToken: t.String({default: "accessToken"}),
-	refreshToken: t.String({default: "refreshToken"}),
-})
-
-const refreshSuccessResponse = t.Object({
-  accessToken: t.String({default: "accessToken"}),
-	refreshToken: t.String({default: "refreshToken"}),
-})
-
 function generateTokens(userId: number, login: string) {
   const accessSecret = process.env.JWT_ACCESS_SECRET;
   const refreshSecret = process.env.JWT_REFRESH_SECRET;
@@ -109,7 +94,8 @@ export const authHandler = new Elysia({ prefix: "/auth" })
     {
       body: registerBodySchema,
       response: {
-        201: messageResponse,
+        201: t.Object({message: t.String({default: "Регистрация успешна. Пожалуйста, проверьте вашу почту для подтверждения"})}),
+        409: t.Object({message: t.String({default: "Пользователь с таким email или login уже существует"})})
       }
     }
   )
@@ -143,8 +129,8 @@ export const authHandler = new Elysia({ prefix: "/auth" })
     {
       body: verifyEmailBodySchema,
       response:{
-        400: messageResponse,
-        200: messageResponse
+        400: t.Object({message: t.String({default: "Почта уже подтверждена/Неверный email или код подтверждения"})}),
+        200: t.Object({message: t.String({default: "Почта успешно подтверждена !"})})
       }
     }
   )
@@ -200,10 +186,14 @@ export const authHandler = new Elysia({ prefix: "/auth" })
     {
       body: loginBodySchema,
       response: {
-        404: messageResponse,
-        403: messageResponse,
-        401: messageResponse,
-        200: loginSuccessResponse,
+        404: t.Object({message: t.String({default: "Пользователь с таким логином не найден!"})}),
+        403: t.Object({message: t.String({default: "Не подтверждена почта"})}),
+        401: t.Object({message: t.String({default: "Неверный пароль"})}),
+        200: t.Object({
+	        message: t.String({default: "Успешный вход"}),
+          accessToken: t.String({default: "accessToken"}),
+	        refreshToken: t.String({default: "refreshToken"}),
+        })
       },
     }
   )
@@ -260,9 +250,12 @@ export const authHandler = new Elysia({ prefix: "/auth" })
 	{
 		body: refreshBodySchema,
     response: {
-      200: refreshSuccessResponse,
-      401: messageResponse,
-      403: messageResponse
+      200: t.Object({
+        accessToken: t.String({default: "accessToken"}),
+	      refreshToken: t.String({default: "refreshToken"}),
+      }),
+      401: t.Object({message: t.String({default: "Неверный refresh токен"})}),
+      403: t.Object({message: t.String({default: "Refresh токен истек или невалиден"})}),
     }
 	}
 )
@@ -270,7 +263,7 @@ export const authHandler = new Elysia({ prefix: "/auth" })
     const currentRefreshToken = body.refreshToken
     if (!currentRefreshToken) {
       set.status = 204;
-      return {message: "Токен где?"};
+      return {message: "Токен не предоставлен"};
     }
 
     await prisma.user.updateMany({
@@ -285,6 +278,6 @@ export const authHandler = new Elysia({ prefix: "/auth" })
 	{
 		body: refreshBodySchema,
     response: {
-      200: messageResponse
+      200: t.Object({message: t.String({default: "Выход выполнен успешно"})}),
     }
 	});
