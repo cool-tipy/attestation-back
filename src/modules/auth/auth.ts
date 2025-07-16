@@ -161,6 +161,8 @@ export const authHandler = new Elysia({ prefix: "/auth" })
         httpOnly: true,
         maxAge: 7 * 86400,
         path: "/",
+        sameSite: 'none',
+        secure: process.env.NODE_ENV === 'production',
       });
 
       return {
@@ -213,6 +215,8 @@ export const authHandler = new Elysia({ prefix: "/auth" })
       httpOnly: true,
       maxAge: 7 * 86400,
       path: "/",
+      sameSite: 'none',
+      secure: process.env.NODE_ENV === 'production',
     });
 
     return { accessToken: accessToken };
