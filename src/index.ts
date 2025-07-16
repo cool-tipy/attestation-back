@@ -3,7 +3,6 @@ import swagger from "@elysiajs/swagger";
 import { Elysia } from "elysia";
 import { authHandler } from "./modules/auth/auth";
 import cors from "@elysiajs/cors";
-import { readFileSync } from "fs";
 
 const app = new Elysia()
   .use(swagger())
