@@ -1,8 +1,8 @@
-import { Elysia, t } from "elysia";
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
-import { sendVerificationEmail } from "../mail/email";
-import jwt from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client"
+import bcrypt from "bcryptjs"
+import { Elysia, t } from "elysia"
+import jwt from "jsonwebtoken"
+import { sendVerificationEmail } from "../mail/email"
 
 const prisma = new PrismaClient();
 
@@ -23,6 +23,10 @@ const verifyEmailBodySchema = t.Object({
 const loginBodySchema = t.Object({
   login: t.String(),
   password: t.String(),
+});
+
+const refreshBodySchema = t.Object({
+  refreshToken: t.String(),
 });
 
 function generateTokens(userId: number, login: string) {
@@ -124,7 +128,7 @@ export const authHandler = new Elysia({ prefix: "/auth" })
   )
   .post(
     "/login",
-    async ({ body, set, cookie }) => {
+    async ({ body, set }) => {
       const user = await prisma.user.findUnique({
         where: { login: body.login },
       });
@@ -155,27 +159,28 @@ export const authHandler = new Elysia({ prefix: "/auth" })
         where: { id: user.id },
         data: { refreshToken: refreshToken },
       });
-
-      cookie.refreshToken.set({
-        value: refreshToken,
-        httpOnly: true,
-        maxAge: 7 * 86400,
-        path: "/",
-        sameSite: 'none',
-        secure: true,
-      });
+			/**FIXME: Убрать если Булат разрешит */
+      // cookie.refreshToken.set({
+      //   value: refreshToken,
+      //   httpOnly: true,
+      //   maxAge: 7 * 86400,
+      //   path: "/",
+      //   sameSite: 'none',
+      //   secure: true,
+      // });
 
       return {
         message: "Вход успешен",
         accessToken: accessToken,
+				refreshToken: refreshToken,
       };
     },
     {
       body: loginBodySchema,
     }
   )
-  .post("/refresh", async ({ cookie, set }) => {
-    const currentRefreshToken = cookie.refreshToken.value;
+  .post("/refresh", async ({ body, set }) => {
+    const currentRefreshToken = body.refreshToken
 
     if (!currentRefreshToken) {
       set.status = 401;
@@ -187,7 +192,8 @@ export const authHandler = new Elysia({ prefix: "/auth" })
     });
 
     if (!user) {
-      cookie.refreshToken.remove();
+			/**FIXME: Убрать если Булат разрешит */
+      // cookie.refreshToken.remove();
       set.status = 403;
       return { message: "Невалидный refresh токен" };
     }
@@ -195,7 +201,8 @@ export const authHandler = new Elysia({ prefix: "/auth" })
     try {
       jwt.verify(currentRefreshToken, process.env.JWT_REFRESH_SECRET!);
     } catch (error) {
-      cookie.refreshToken.remove();
+			/**FIXME: Убрать если Булат разрешит */
+      // cookie.refreshToken.remove();
       set.status = 403;
       return { message: "Refresh токен истек или невалиден" };
     }
@@ -210,19 +217,24 @@ export const authHandler = new Elysia({ prefix: "/auth" })
       data: { refreshToken: newRefreshToken },
     });
 
-    cookie.refreshToken.set({
-      value: newRefreshToken,
-      httpOnly: true,
-      maxAge: 7 * 86400,
-      path: "/",
-      sameSite: 'none',
-      secure: true,
-    });
+		/**FIXME: Убрать если Булат разрешит */
+    // cookie.refreshToken.set({
+    //   value: newRefreshToken,
+    //   httpOnly: true,
+    //   maxAge: 7 * 86400,
+    //   path: "/",
+    //   sameSite: 'none',
+    //   secure: true,
+    // });
 
-    return { accessToken: accessToken };
-  })
-  .post("/logout", async ({ cookie, set }) => {
-    const currentRefreshToken = cookie.refreshToken.value;
+    return { accessToken: accessToken, refreshToken: newRefreshToken };
+  },
+	{
+		body: refreshBodySchema
+	}
+)
+  .post("/logout", async ({ body, set }) => {
+    const currentRefreshToken = body.refreshToken
     if (!currentRefreshToken) {
       set.status = 204;
       return;
@@ -232,9 +244,12 @@ export const authHandler = new Elysia({ prefix: "/auth" })
       where: { refreshToken: currentRefreshToken },
       data: { refreshToken: null },
     });
-
-    cookie.refreshToken.remove();
+		/**FIXME: Убрать если Булат разрешит */
+    // cookie.refreshToken.remove();
 
     set.status = 200;
     return { message: "Выход выполнен успешно" };
-  });
+  },
+	{
+		body: refreshBodySchema
+	});
