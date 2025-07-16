@@ -14,7 +14,7 @@ const app = new Elysia()
       credentials: true,
     })
   )
-  .use(cookie())
+  .use(cookie({sameSite: 'none'}))
   .get("/", () => "Welcome!!!")
   .use(authHandler)
   .listen(3000);
