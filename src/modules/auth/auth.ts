@@ -29,6 +29,21 @@ const refreshBodySchema = t.Object({
   refreshToken: t.String(),
 });
 
+const messageResponse = t.Object({
+	message: t.String({default: "some message"})
+})
+
+const loginSuccessResponse = t.Object({
+	message: t.String({default: "Вход успешен"}),
+  accessToken: t.String({default: "accessToken"}),
+	refreshToken: t.String({default: "refreshToken"}),
+})
+
+const refreshSuccessResponse = t.Object({
+  accessToken: t.String({default: "accessToken"}),
+	refreshToken: t.String({default: "refreshToken"}),
+})
+
 function generateTokens(userId: number, login: string) {
   const accessSecret = process.env.JWT_ACCESS_SECRET;
   const refreshSecret = process.env.JWT_REFRESH_SECRET;
@@ -93,6 +108,9 @@ export const authHandler = new Elysia({ prefix: "/auth" })
     },
     {
       body: registerBodySchema,
+      response: {
+        201: messageResponse,
+      }
     }
   )
   .post(
@@ -119,11 +137,15 @@ export const authHandler = new Elysia({ prefix: "/auth" })
           emailVerificationCode: null,
         },
       });
-
+      
       return { message: "Почта успешно подтверждена!" };
     },
     {
       body: verifyEmailBodySchema,
+      response:{
+        400: messageResponse,
+        200: messageResponse
+      }
     }
   )
   .post(
@@ -177,6 +199,12 @@ export const authHandler = new Elysia({ prefix: "/auth" })
     },
     {
       body: loginBodySchema,
+      response: {
+        404: messageResponse,
+        403: messageResponse,
+        401: messageResponse,
+        200: loginSuccessResponse,
+      },
     }
   )
   .post("/refresh", async ({ body, set }) => {
@@ -230,14 +258,19 @@ export const authHandler = new Elysia({ prefix: "/auth" })
     return { accessToken: accessToken, refreshToken: newRefreshToken };
   },
 	{
-		body: refreshBodySchema
+		body: refreshBodySchema,
+    response: {
+      200: refreshSuccessResponse,
+      401: messageResponse,
+      403: messageResponse
+    }
 	}
 )
   .post("/logout", async ({ body, set }) => {
     const currentRefreshToken = body.refreshToken
     if (!currentRefreshToken) {
       set.status = 204;
-      return;
+      return {message: "Токен где?"};
     }
 
     await prisma.user.updateMany({
@@ -247,9 +280,11 @@ export const authHandler = new Elysia({ prefix: "/auth" })
 		/**FIXME: Убрать если Булат разрешит */
     // cookie.refreshToken.remove();
 
-    set.status = 200;
     return { message: "Выход выполнен успешно" };
   },
 	{
-		body: refreshBodySchema
+		body: refreshBodySchema,
+    response: {
+      200: messageResponse
+    }
 	});
