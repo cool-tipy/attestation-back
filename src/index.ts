@@ -1,8 +1,9 @@
-import { cookie } from "@elysiajs/cookie";
-import swagger from "@elysiajs/swagger";
-import { Elysia } from "elysia";
-import { authHandler } from "./modules/auth/auth";
-import cors from "@elysiajs/cors";
+import { cookie } from "@elysiajs/cookie"
+import cors from "@elysiajs/cors"
+import swagger from "@elysiajs/swagger"
+import { Elysia } from "elysia"
+import { authHandler } from "./modules/auth/auth"
+import { userHandler } from './modules/user/user'
 
 const app = new Elysia()
   .use(swagger())
@@ -17,6 +18,7 @@ const app = new Elysia()
   .use(cookie({ sameSite: "none", secure: true }))
   .get("/", () => "Welcome!!!")
   .use(authHandler)
+  .use(userHandler)
   .listen({
     port: 3000,
   });
