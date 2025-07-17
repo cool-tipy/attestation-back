@@ -1,4 +1,4 @@
-import Elysia from 'elysia'
+import { Elysia } from 'elysia'
 import jwt from 'jsonwebtoken'
 
 export const authMiddleware = new Elysia()
