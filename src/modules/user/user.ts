@@ -1,6 +1,5 @@
 import { Elysia, t } from 'elysia'
-import { prisma } from '../../lib/prisma' // <-- Импортируем синглтон
-import { authMiddleware } from '../../middleware/auth'
+import { prisma } from '../../lib/prisma'; // <-- Импортируем синглтон
 
 const userSchemaResponse = t.Object({
   id: t.Number(),
@@ -13,7 +12,6 @@ const userSchemaResponse = t.Object({
 })
 
 export const userHandler = new Elysia({ prefix: '/users' }) // <-- Добавим префикс для чистоты
-  .use(authMiddleware) // <-- Теперь это работает правильно!
   .get(
     '/', // <-- Маршрут теперь /users/
     async ({ set, store }) => { // <-- Можно получить store и currentUser, если нужно

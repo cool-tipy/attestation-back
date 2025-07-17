@@ -2,8 +2,13 @@ import { cookie } from "@elysiajs/cookie"
 import cors from "@elysiajs/cors"
 import swagger from "@elysiajs/swagger"
 import { Elysia } from "elysia"
+import { authMiddleware } from './middleware/auth'
 import { authHandler } from "./modules/auth/auth"
 import { userHandler } from './modules/user/user'
+
+const protectedRoutes = new Elysia()
+.use(authMiddleware)
+.use(userHandler)
 
 const app = new Elysia()
   .use(swagger())
@@ -25,7 +30,7 @@ const app = new Elysia()
   })
   .get("/", () => "Welcome!!!")
   .use(authHandler)
-  .use(userHandler)
+  .use(protectedRoutes)
   .listen({
     port: 3000,
-  });
+  })
