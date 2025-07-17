@@ -167,15 +167,6 @@ export const authHandler = new Elysia({ prefix: "/auth" })
         where: { id: user.id },
         data: { refreshToken: refreshToken },
       });
-			/**FIXME: Убрать если Булат разрешит */
-      // cookie.refreshToken.set({
-      //   value: refreshToken,
-      //   httpOnly: true,
-      //   maxAge: 7 * 86400,
-      //   path: "/",
-      //   sameSite: 'none',
-      //   secure: true,
-      // });
 
       return {
         message: "Вход успешен",
@@ -210,8 +201,6 @@ export const authHandler = new Elysia({ prefix: "/auth" })
     });
 
     if (!user) {
-			/**FIXME: Убрать если Булат разрешит */
-      // cookie.refreshToken.remove();
       set.status = 403;
       return { message: "Невалидный refresh токен" };
     }
@@ -219,8 +208,6 @@ export const authHandler = new Elysia({ prefix: "/auth" })
     try {
       jwt.verify(currentRefreshToken, process.env.JWT_REFRESH_SECRET!);
     } catch (error) {
-			/**FIXME: Убрать если Булат разрешит */
-      // cookie.refreshToken.remove();
       set.status = 403;
       return { message: "Refresh токен истек или невалиден" };
     }
@@ -234,16 +221,6 @@ export const authHandler = new Elysia({ prefix: "/auth" })
       where: { id: user.id },
       data: { refreshToken: newRefreshToken },
     });
-
-		/**FIXME: Убрать если Булат разрешит */
-    // cookie.refreshToken.set({
-    //   value: newRefreshToken,
-    //   httpOnly: true,
-    //   maxAge: 7 * 86400,
-    //   path: "/",
-    //   sameSite: 'none',
-    //   secure: true,
-    // });
 
     return { accessToken: accessToken, refreshToken: newRefreshToken };
   },
@@ -263,15 +240,13 @@ export const authHandler = new Elysia({ prefix: "/auth" })
     const currentRefreshToken = body.refreshToken
     if (!currentRefreshToken) {
       set.status = 204;
-      return {message: "Токен не предоставлен"};
+      return;
     }
 
     await prisma.user.updateMany({
       where: { refreshToken: currentRefreshToken },
       data: { refreshToken: null },
     });
-		/**FIXME: Убрать если Булат разрешит */
-    // cookie.refreshToken.remove();
 
     return { message: "Выход выполнен успешно" };
   },
@@ -279,5 +254,6 @@ export const authHandler = new Elysia({ prefix: "/auth" })
 		body: refreshBodySchema,
     response: {
       200: t.Object({message: t.String({default: "Выход выполнен успешно"})}),
+      204: t.Void()
     }
 	});
