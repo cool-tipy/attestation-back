@@ -2,7 +2,7 @@ import { Elysia } from "elysia"
 import jwt from "jsonwebtoken"
 
 export const authMiddleware = new Elysia().derive(({ headers, set}) => {
-  const authHeader = headers["authorization"];
+  const authHeader = headers["Authorization"];
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
      throw new Error( "Нет токена авторизации");
