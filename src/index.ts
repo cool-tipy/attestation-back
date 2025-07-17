@@ -10,7 +10,7 @@ const app = new Elysia()
   .use(
     cors({
       // Для продакшена лучше вынести в переменные окружения
-      origin: ["http://localhost:5173", "http://localhost:8080"],
+      origin: ["https://localhost:5173", "https://localhost:8080"],
       methods: ["GET", "POST", "PUT", "DELETE"],
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
