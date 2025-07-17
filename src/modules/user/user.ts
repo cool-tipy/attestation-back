@@ -19,6 +19,7 @@ export const userHandler = new Elysia()
   .get(
     "/users",
     async ({ set }) => {
+     
       try{
         const users = await prisma.user.findMany({
           select: {
