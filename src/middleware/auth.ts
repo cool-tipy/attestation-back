@@ -1,18 +1,18 @@
 import { Elysia } from "elysia"
 import jwt from "jsonwebtoken"
 
-export const authMiddleware = new Elysia().onBeforeHandle(({ headers, set, error }) => {
+export const authMiddleware = new Elysia().derive(({ headers, set}) => {
   const authHeader = headers["authorization"];
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return error(401, { message: "Нет токена авторизации" });
+     throw new Error( "Нет токена авторизации");
   }
 
   const token = authHeader.split(" ")[1];
 
   // Проверяем, что токен не undefined или пустой
   if (!token || token === 'undefined') {
-    return error(401, { message: "Нет токена авторизации" });
+     throw new Error("Нет токена авторизации" );
   }
 
   try {
@@ -21,6 +21,6 @@ export const authMiddleware = new Elysia().onBeforeHandle(({ headers, set, error
       user: decoded,
     };
   } catch {
-    return error(401, { message: "Невалидный токен" });
+     throw new Error("Невалидный токен");
   }
-});
+}); 
