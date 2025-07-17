@@ -10,7 +10,7 @@ const app = new Elysia()
   .use(
     cors({
       // Для продакшена лучше вынести в переменные окружения
-      origin: process.env.CORS_ORIGIN?.split(',') ?? ["http://localhost:5173", "http://localhost:8080"],
+      origin: ["http://localhost:5173", "http://localhost:8080"],
       methods: ["GET", "POST", "PUT", "DELETE"],
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
@@ -27,5 +27,5 @@ const app = new Elysia()
   .use(authHandler)
   .use(userHandler)
   .listen({
-    port: process.env.PORT ?? 3000,
+    port: 3000,
   });
