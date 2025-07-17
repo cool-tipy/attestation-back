@@ -1,9 +1,6 @@
-import { PrismaClient } from '@prisma/client'
 import { Elysia, t } from 'elysia'
+import { prisma } from '../../lib/prisma' // <-- Импортируем синглтон
 import { authMiddleware } from '../../middleware/auth'
-
-
-const prisma = new PrismaClient()
 
 const userSchemaResponse = t.Object({
   id: t.Number(),
@@ -15,13 +12,14 @@ const userSchemaResponse = t.Object({
   isEmailVerified: t.Boolean(),
 })
 
-export const userHandler = new Elysia()
-  .use(authMiddleware)
+export const userHandler = new Elysia({ prefix: '/users' }) // <-- Добавим префикс для чистоты
+  .use(authMiddleware) // <-- Теперь это работает правильно!
   .get(
-    "/users",
-    async ({ set }) => {
+    '/', // <-- Маршрут теперь /users/
+    async ({ set, store }) => { // <-- Можно получить store и currentUser, если нужно
+      // console.log('Current user:', store.currentUser)
 
-      try{
+      try {
         const users = await prisma.user.findMany({
           select: {
             id: true,
@@ -31,23 +29,27 @@ export const userHandler = new Elysia()
             lastName: true,
             patronymic: true,
             isEmailVerified: true,
-          }
+          },
         })
-
+        
+        // Ваш map для обработки null в undefined абсолютно корректен для схемы
         return users.map(user => ({
           ...user,
           lastName: user.lastName ?? undefined,
           patronymic: user.patronymic ?? undefined
         }))
-      }catch(error){
-        set.status = 500;
-        return { message: `Ошибка ${error}` };
+
+      } catch (error) {
+        set.status = 500
+        return { message: `Ошибка: ${error}` }
       }
     },
     {
       response: {
-        500: t.Object({message: t.String({default: "Error"})}),
-        200: t.Array(userSchemaResponse)
-      }
+        500: t.Object({ message: t.String() }),
+        401: t.Object({ message: t.String() }), // Добавим ответы от middleware
+        403: t.Object({ message: t.String() }),
+        200: t.Array(userSchemaResponse),
+      },
     }
   )
