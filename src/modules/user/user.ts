@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { Elysia, t } from 'elysia'
+import { authMiddleware } from '../../middleware/auth'
 
 const prisma = new PrismaClient()
 
@@ -14,6 +15,7 @@ const userSchemaResponse = t.Object({
 })
 
 export const userHandler = new Elysia()
+  .use(authMiddleware)
   .get(
     "/users",
     async ({ set }) => {
