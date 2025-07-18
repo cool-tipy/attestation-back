@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { Elysia, t } from 'elysia'
-import jwt from 'jsonwebtoken'
+import { verifyToken } from '../../utils/auth'
 
 const prisma = new PrismaClient()
 
@@ -16,21 +16,10 @@ const userSchemaResponse = t.Object({
 
 export const userHandler = new Elysia({ prefix: '/users' })
   .get('/', 
-    async ({ set, headers}) => { 
+    async ({ set, headers }) => { 
       try {
-        const token = headers["authorization"]
 
-        if(!token){
-          set.status = 500
-          return { message: `Ошибка` }
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET!)
-
-        if(!decoded){
-          set.status = 500
-          return { message: `Ошибка` }
-        }
+        verifyToken(headers, set)
 
         const users = await prisma.user.findMany({
           select: {
@@ -38,7 +27,7 @@ export const userHandler = new Elysia({ prefix: '/users' })
             email: true,
             login: true,
             firstName: true,
-            lastName: true,
+            lastName: true, 
             patronymic: true,
             isEmailVerified: true,
           },
