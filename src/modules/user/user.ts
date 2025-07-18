@@ -17,8 +17,9 @@ const userSchemaResponse = t.Object({
 export const userHandler = new Elysia({ prefix: '/users' })
   .get('/', 
     async ({ set, headers }) => { 
-      verifyToken(headers, set)
       try {
+        verifyToken(headers, set)
+
         const users = await prisma.user.findMany({
           select: {
             id: true,
@@ -38,9 +39,9 @@ export const userHandler = new Elysia({ prefix: '/users' })
           patronymic: user.patronymic ?? undefined
         }))
 
-      } catch (error) {
-        set.status = 500
-        return { message: `Ошибка: ${error}` }
+      } catch (error: any) {
+        set.status = error.status || 500
+        return { message: error.message || 'Internal Server Error' }
       }
     },
     {
