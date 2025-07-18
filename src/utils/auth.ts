@@ -1,4 +1,3 @@
-
 import jwt from 'jsonwebtoken'
 
 export function verifyToken(headers: Record<string, string | undefined>, set: any) {
@@ -9,13 +8,15 @@ export function verifyToken(headers: Record<string, string | undefined>, set: an
 
   const token = headers['authorization']
   if (!token) {
-    return
+    set.status = 401
+    throw new Error('Token not provided')
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET!)
     return decoded
   } catch (err) {
-    return
+    set.status = 401
+    throw new Error('Invalid token')
   }
 }

@@ -17,10 +17,8 @@ const userSchemaResponse = t.Object({
 export const userHandler = new Elysia({ prefix: '/users' })
   .get('/', 
     async ({ set, headers }) => { 
+      verifyToken(headers, set)
       try {
-
-        verifyToken(headers, set)
-
         const users = await prisma.user.findMany({
           select: {
             id: true,
