@@ -15,9 +15,10 @@ const app = new Elysia()
   .use(swagger())
   .use(
     cors({
-      origin: ["https://localhost:5173", "https://localhost:8080"],
+      origin: ["https://localhost:5173", "https://localhost:8080", "http://localhost:3000"],
       methods: ["GET", "POST", "PUT", "DELETE"],
       allowedHeaders: ["Content-Type", "Authorization"],
+      exposeHeaders: ["Authorization"], // Добавьте эту строку!
       credentials: true,
     })
   )

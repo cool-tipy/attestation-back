@@ -9,14 +9,18 @@ function verifyAccessToken(token: string) {
 
 export const isAuthenticated = new Elysia({ name: "isAuthenticated" })
   .derive(async ({ headers, set }) => {
+     console.log("Received headers:", headers) // Логгируем заголовки
+
     const authHeader = headers["authorization"];
     if (!authHeader) {
+      console.warn("Authorization header missing")
       set.status = 401;
       return { auth: { error: "Токен отсутствует" } };
     }
 
     const parts = authHeader.split(" ");
     if (parts.length !== 2 || parts[0] !== "Bearer") {
+      console.warn("Invalid token format:", authHeader)
       set.status = 401;
       return { auth: { error: "Неверный формат токена" } };
     }
