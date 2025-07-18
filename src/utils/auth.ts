@@ -16,7 +16,7 @@ export function verifyToken(headers: Record<string, string | undefined>, set: an
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET!)
     return decoded
   } catch (err) {
-    set.status = 401
+    set.status = 403
     throw new Error('Invalid token')
   }
 }
