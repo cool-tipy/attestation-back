@@ -39,8 +39,7 @@ function generateTokens(userId: number, login: string) {
   }
 
   const accessToken = jwt.sign({ userId, login }, accessSecret, {
-    expiresIn: "1m",
-    //expiresIn: "15m",
+    expiresIn: "15m",
   });
 
   const refreshToken = jwt.sign({ userId, login }, refreshSecret, {
