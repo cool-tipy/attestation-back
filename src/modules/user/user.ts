@@ -27,6 +27,11 @@ export const userHandler = new Elysia({ prefix: '/users' })
 
         const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET!)
 
+        if(!decoded){
+          set.status = 500
+          return { message: `Ошибка` }
+        }
+
         const users = await prisma.user.findMany({
           select: {
             id: true,
@@ -38,13 +43,13 @@ export const userHandler = new Elysia({ prefix: '/users' })
             isEmailVerified: true,
           },
         })
-        return decoded
-        // return users.map(user => ({
+
+        return users.map(user => ({
           
-        //   ...user,
-        //   lastName: user.lastName ?? undefined,
-        //   patronymic: user.patronymic ?? undefined
-        // }))
+          ...user,
+          lastName: user.lastName ?? undefined,
+          patronymic: user.patronymic ?? undefined
+        }))
 
       } catch (error) {
         set.status = 500
@@ -56,7 +61,7 @@ export const userHandler = new Elysia({ prefix: '/users' })
         500: t.Object({ message: t.String() }),
         401: t.Object({ message: t.String() }), 
         403: t.Object({ message: t.String() }),
-        // 200: t.Array(userSchemaResponse),g
+        200: t.Array(userSchemaResponse),
       },
     }
   )
