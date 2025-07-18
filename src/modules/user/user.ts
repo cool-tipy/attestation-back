@@ -1,5 +1,8 @@
+import { PrismaClient } from '@prisma/client'
 import { Elysia, t } from 'elysia'
-import { prisma } from '../../lib/prisma'; // <-- Импортируем синглтон
+import { isAuthenticated } from '../../plugins/auth'
+
+const prisma = new PrismaClient()
 
 const userSchemaResponse = t.Object({
   id: t.Number(),
@@ -11,12 +14,10 @@ const userSchemaResponse = t.Object({
   isEmailVerified: t.Boolean(),
 })
 
-export const userHandler = new Elysia({ prefix: '/users' }) // <-- Добавим префикс для чистоты
-  .get(
-    '/', // <-- Маршрут теперь /users/
-    async ({ set, store }) => { // <-- Можно получить store и currentUser, если нужно
-      // console.log('Current user:', store.currentUser)
-
+export const userHandler = new Elysia({ prefix: '/users' })
+  .use(isAuthenticated)
+  .get('/', 
+    async ({ set }) => { 
       try {
         const users = await prisma.user.findMany({
           select: {
@@ -30,7 +31,6 @@ export const userHandler = new Elysia({ prefix: '/users' }) // <-- Добави�
           },
         })
         
-        // Ваш map для обработки null в undefined абсолютно корректен для схемы
         return users.map(user => ({
           ...user,
           lastName: user.lastName ?? undefined,
@@ -45,7 +45,7 @@ export const userHandler = new Elysia({ prefix: '/users' }) // <-- Добави�
     {
       response: {
         500: t.Object({ message: t.String() }),
-        401: t.Object({ message: t.String() }), // Добавим ответы от middleware
+        401: t.Object({ message: t.String() }), 
         403: t.Object({ message: t.String() }),
         200: t.Array(userSchemaResponse),
       },
