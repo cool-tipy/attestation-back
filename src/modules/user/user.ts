@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client'
 import { Elysia, t } from 'elysia'
-import { isAuthenticated } from '../../plugins/auth'
 
 const prisma = new PrismaClient()
 
@@ -15,10 +14,11 @@ const userSchemaResponse = t.Object({
 })
 
 export const userHandler = new Elysia({ prefix: '/users' })
-  .use(isAuthenticated)
   .get('/', 
-    async ({ set }) => { 
+    async ({ set, headers }) => { 
+
       try {
+        const token = headers["authorization"]
         const users = await prisma.user.findMany({
           select: {
             id: true,
@@ -30,12 +30,13 @@ export const userHandler = new Elysia({ prefix: '/users' })
             isEmailVerified: true,
           },
         })
-        
-        return users.map(user => ({
-          ...user,
-          lastName: user.lastName ?? undefined,
-          patronymic: user.patronymic ?? undefined
-        }))
+        return token
+        // return users.map(user => ({
+          
+        //   ...user,
+        //   lastName: user.lastName ?? undefined,
+        //   patronymic: user.patronymic ?? undefined
+        // }))
 
       } catch (error) {
         set.status = 500
@@ -47,7 +48,7 @@ export const userHandler = new Elysia({ prefix: '/users' })
         500: t.Object({ message: t.String() }),
         401: t.Object({ message: t.String() }), 
         403: t.Object({ message: t.String() }),
-        200: t.Array(userSchemaResponse),
+        // 200: t.Array(userSchemaResponse),g
       },
     }
   )
