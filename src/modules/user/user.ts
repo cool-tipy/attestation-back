@@ -14,8 +14,13 @@ const userSchemaResponse = t.Object({
   isEmailVerified: t.Boolean(),
 })
 
-export const userHandler = new Elysia({ prefix: '/users' })
-  .get('/', 
+const currentUserBodySchema = t.Object({
+  refreshToken: t.String()
+})
+
+export const userHandler = new Elysia()
+  .get(
+    '/users', 
     async ({ set, headers }) => { 
       try {
         verifyToken(headers, set)
@@ -53,3 +58,50 @@ export const userHandler = new Elysia({ prefix: '/users' })
       },
     }
   )
+  .get(
+    '/currentUser', 
+    async ({ set, headers, body}) => { 
+      try {
+        verifyToken(headers, set)
+
+        const currentUser = await prisma.user.findUnique({
+          where: { refreshToken: body.refreshToken },
+          select: {
+            id: true,
+            email: true,
+            login: true,
+            firstName: true,
+            lastName: true, 
+            patronymic: true,
+            isEmailVerified: true,
+          }
+        })
+
+        if (!currentUser) {
+          set.status = 404
+          return { message: 'Пользователь не найден' }
+      }
+
+        return {
+        ...currentUser,
+        lastName: currentUser.lastName ?? undefined,
+        patronymic: currentUser.patronymic ?? undefined
+      }
+
+      } catch (error: any) {
+        set.status = error.status || 500
+        return { message: error.message || 'Internal Server Error' }
+      }
+    },
+    { 
+      body: currentUserBodySchema,
+      response: {
+        500: t.Object({ message: t.String() }),
+        401: t.Object({ message: t.String() }), 
+        403: t.Object({ message: t.String() }),
+        404: t.Object({ message: t.String() }),
+        200: userSchemaResponse,
+      },
+    }
+  )
+ 
