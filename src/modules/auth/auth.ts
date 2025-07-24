@@ -143,7 +143,7 @@ export const authHandler = new Elysia({ prefix: "/auth" })
 
       if (!user) {
         set.status = 404;
-        return { message: "Пользователь с таким логином не найден!" };
+        return { message: "Неверный логин или пароль" };
       }
 
       if (!user.isEmailVerified) {
@@ -157,8 +157,8 @@ export const authHandler = new Elysia({ prefix: "/auth" })
       );
 
       if (!isPasswordValid) {
-        set.status = 401;
-        return { message: "Неверный пароль" };
+        set.status = 404;
+        return { message: "Неверный логин или пароль" };
       }
 
       const { accessToken, refreshToken } = generateTokens(user.id, user.login);
@@ -177,9 +177,8 @@ export const authHandler = new Elysia({ prefix: "/auth" })
     {
       body: loginBodySchema,
       response: {
-        404: t.Object({message: t.String({default: "Пользователь с таким логином не найден!"})}),
         403: t.Object({message: t.String({default: "Не подтверждена почта"})}),
-        401: t.Object({message: t.String({default: "Неверный пароль"})}),
+        404: t.Object({message: t.String({default: "Неверный пароль или логин"})}),
         200: t.Object({
 	        message: t.String({default: "Успешный вход"}),
           accessToken: t.String({default: "accessToken"}),
