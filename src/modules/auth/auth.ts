@@ -81,9 +81,15 @@ export const authHandler = new Elysia({ prefix: "/auth" })
         await sendVerificationEmail(body.email, verificationCode);
 
         set.status = 201;
+        const createdUser = await prisma.user.findUnique({
+          where: { login: body.login },
+          select: {
+            id: true,
+            email: true,
+          }
+        })
         return {
-          message:
-            "Регистрация успешна. Пожалуйста, проверьте вашу почту для подтверждения.",
+          newUser: createdUser
         };
       } catch (error) {
         console.error(error);
@@ -94,7 +100,7 @@ export const authHandler = new Elysia({ prefix: "/auth" })
     {
       body: registerBodySchema,
       response: {
-        201: t.Object({message: t.String({default: "Регистрация успешна. Пожалуйста, проверьте вашу почту для подтверждения"})}),
+        201: t.Object({newUser: t.Object({id: t.Number({default: 0}), email: t.String({default: 'User@test.com'})})}),
         409: t.Object({message: t.String({default: "Пользователь с таким email или login уже существует"})})
       }
     }
