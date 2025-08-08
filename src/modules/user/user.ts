@@ -65,7 +65,7 @@ export const userHandler = new Elysia()
   '/users/:id',
   async ({ params, set, headers }) => {
     try {
-      verifyToken(headers, set)
+      // verifyToken(headers, set)
 
       const userId = parseInt(params.id)
       
