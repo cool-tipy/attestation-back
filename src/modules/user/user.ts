@@ -23,7 +23,7 @@ export const userHandler = new Elysia()
     '/users', 
     async ({ set, headers }) => { 
       try {
-        verifyToken(headers, set)
+        // verifyToken(headers, set)
 
         const users = await prisma.user.findMany({
           select: {
