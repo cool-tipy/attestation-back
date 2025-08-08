@@ -18,6 +18,8 @@ const currentUserBodySchema = t.Object({
   refreshToken: t.String()
 })
 
+
+
 export const userHandler = new Elysia()
   .get(
     '/users', 
@@ -57,7 +59,58 @@ export const userHandler = new Elysia()
         200: t.Array(userSchemaResponse),
       },
     }
-  )
+    )
+
+    .delete(
+  '/users/:id',
+  async ({ params, set, headers }) => {
+    try {
+      verifyToken(headers, set)
+
+      const userId = parseInt(params.id)
+      
+      if (isNaN(userId)) {
+        set.status = 400
+        return { message: 'Некорректный ID пользователя' }
+      }
+
+      const existingUser = await prisma.user.findUnique({
+        where: { id: userId }
+      })
+
+      if (!existingUser) {
+        set.status = 404
+        return { message: 'Пользователь не найден' }
+      }
+
+      await prisma.user.delete({
+        where: { id: userId }
+      })
+
+      set.status = 200
+      return { message: 'Пользователь успешно удален' }
+
+    } catch (error: any) {
+
+      set.status = error.status || 500
+      return { message: error.message || 'Internal Server Error' }
+    }
+  },
+  {
+    params: t.Object({
+      id: t.String()
+    }),
+    response: {
+      200: t.Object({ message: t.String() }),
+      400: t.Object({ message: t.String() }),
+      401: t.Object({ message: t.String() }),
+      403: t.Object({ message: t.String() }),
+      404: t.Object({ message: t.String() }),
+      500: t.Object({ message: t.String() })
+    }
+  }
+)
+
   .get(
     '/currentUser', 
     async ({ set, headers, body}) => { 
